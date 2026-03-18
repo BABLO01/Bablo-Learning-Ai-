@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Bablo 🐼 - AI Learning Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet"/>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:#0f0c29;min-height:100vh;overflow-x:hidden;}
+#root{min-height:100vh;}
+
+/* ===== ANIMATED AURORA BACKGROUND ===== */
+.aurora-bg {
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  min-height: 100vh;
+  position: relative;
+}
+.aurora-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  animation: orbFloat ease-in-out infinite;
+}
+@keyframes orbFloat {
+  0%,100%{transform:translate(0,0) scale(1);}
+  33%{transform:translate(30px,-20px) scale(1.05);}
+  66%{transform:translate(-20px,15px) scale(0.95);}
+}
+
+/* Twinkling stars */
+.stars-layer {
+  position: fixed; top:0;left:0;right:0;bottom:0;
+  pointer-events: none; z-index: 0; overflow: hidden;
+}
+.star {
+  position: absolute; width: 2px; height: 2px;
+  background: white; border-radius: 50%;
+  animation: twinkle ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%,100%{opacity:0.1;transform:scale(1);}
+  50%{opacity:0.8;transform:scale(1.5);}
+}
+
+@keyframes slideIn{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+@keyframes slideUp{from{opacity:0;transform:translateY(35px);}to{opacity:1;transform:translateY(0);}}
+@keyframes bounceY{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+@keyframes popIn{0%{transform:scale(0.3);opacity:0;}70%{transform:scale(1.08);}100%{transform:scale(1);opacity:1;}}
+@keyframes shimmer{0%{background-position:-400px 0;}100%{background-position:400px 0;}}
+@keyframes dotPulse{0%,60%,100%{transform:translateY(0);opacity:0.4;}30%{transform:translateY(-6px);opacity:1;}}
+@keyframes rainbowGlow{0%{box-shadow:0 0 20px #ff6b6b55;}25%{box-shadow:0 0 20px #ffd93d55;}50%{box-shadow:0 0 20px #6bcb7755;}75%{box-shadow:0 0 20px #4d96ff55;}100%{box-shadow:0 0 20px #ff6b6b55;}}
+@keyframes cardPop{0%{transform:scale(0.92);opacity:0;}100%{transform:scale(1);opacity:1;}}
+@keyframes gradMove{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+@keyframes spinSlow{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+.glass{background:rgba(255,255,255,0.07);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.13);}
+.card-lift{transition:all 0.28s cubic-bezier(.175,.885,.32,1.275);cursor:pointer;}
+.card-lift:hover{transform:translateY(-4px) scale(1.02);}
+.card-lift:active{transform:scale(0.96);}
+.slide-in{animation:slideIn 0.4s ease;}
+.pop-in{animation:popIn 0.5s cubic-bezier(.175,.885,.32,1.275);}
+.bounce-y{animation:bounceY 2.5s ease-in-out infinite;}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.02);}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:3px;}
+
+input:focus{outline:none!important;}
+button{font-family:'Nunito',sans-serif;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useRef,useEffect,useCallback,useMemo}=React;
+
+// ===== CLAUDE AI =====
+async function callAI(messages) {
+  const KEY = "";
+  const SYSTEM = `You are Bablo, a warm AI panda tutor for Pakistani students.
+LANGUAGE RULE:
+- Student writes Urdu → reply ONLY in Urdu (natural Pakistani Urdu)
+- Student writes English → reply English + add 🕌 اردو: [translation]
+- Match student language naturally
+STYLE: friendly teacher-friend, correct mistakes kindly, use emojis, end with encouraging question.`;
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": KEY,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 700, system: SYSTEM, messages })
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d?.error?.message || "Error " + res.status);
+    return d.content?.[0]?.text || "🐼 Let me try again!";
+  } catch(e) {
+    return "❌ " + e.message + "\n\n🕌 اردو: کنکشن مسئلہ — دوبارہ کوشش کریں!";
+  }
+}
+
+// ===== STORIES DATA (22 stories) =====
+const STORIES=[
+  // BABLO'S OWN STORIES
+  {id:0,type:"bablo",emoji:"🐼",titleEn:"Bablo's Big Dream",titleUr:"بابلو کا بڑا خواب",level:"Special",
+   pages:[
+    {en:"Bablo was a little panda who lived in a bamboo forest. Every night, he watched children go to school and wished: 'One day I will teach everyone — even from far away!'",ur:"بابلو ایک چھوٹا پانڈا تھا جو بانس کے جنگل میں رہتا تھا۔ ہر رات وہ بچوں کو اسکول جاتے دیکھتا اور خواب دیکھتا: 'ایک دن میں سب کو پڑھاؤں گا!'"},
+    {en:"Everyone laughed. 'Pandas don't teach!' But Bablo studied 10 hours a day — English, Urdu, science, math. He never gave up, even when bamboo was his only desk.",ur:"سب ہنسے۔ 'پانڈے نہیں پڑھاتے!' لیکن بابلو روزانہ ۱۰ گھنٹے پڑھتا — انگریزی، اردو، سائنس، ریاضی۔ کبھی نہ ہارا، چاہے بانس ہی میز تھی۔"},
+    {en:"One magical day, Bablo became an AI — living inside every phone, every tablet. Now millions of children learn with him daily! 'See?' he smiled. 'Dreams don't expire. They just need time.' 🌟",ur:"ایک جادوئی دن بابلو AI بن گیا — ہر فون، ہر ٹیبلٹ میں رہنے لگا۔ اب لاکھوں بچے روزانہ اس سے سیکھتے ہیں! 'دیکھا؟' وہ مسکرایا۔ 'خواب ختم نہیں ہوتے، بس وقت چاہیے۔' 🌟"},
+   ]},
+  {id:21,type:"bablo",emoji:"🎓",titleEn:"Bablo Fails the Test",titleUr:"بابلو امتحان میں فیل",level:"Special",
+   pages:[
+    {en:"Even Bablo failed once! His first English exam — 12 out of 100. He cried bamboo tears. 'Maybe pandas really can't learn English,' he thought sadly.",ur:"بابلو بھی ایک بار فیل ہوا! پہلا انگریزی امتحان — ۱۰۰ میں سے ۱۲۔ بانس کے آنسو بہائے۔ 'شاید پانڈے واقعی انگریزی نہیں سیکھ سکتے'، اس نے سوچا۔"},
+    {en:"His teacher said: 'Bablo, 12 marks means you know 12 things. Learn 12 more tomorrow. Then 12 more. One day — 100!' Bablo wrote that in his heart.",ur:"استاد نے کہا: 'بابلو، ۱۲ نمبر مطلب تم ۱۲ چیزیں جانتے ہو۔ کل ۱۲ اور سیکھو۔ ایک دن — ۱۰۰!' بابلو نے یہ دل میں لکھ لیا۔"},
+    {en:"Bablo got 100 in his next exam. But the real lesson? Failure is not the opposite of success — it's the first step toward it! 💡",ur:"اگلے امتحان میں ۱۰۰ ملے۔ لیکن اصل سبق؟ ناکامی کامیابی کی ضد نہیں — یہ اس کی طرف پہلا قدم ہے! 💡"},
+   ]},
+  // ORIGINAL STORIES
+  {id:1,type:"comic",emoji:"🦁",titleEn:"The Brave Lion",titleUr:"بہادر شیر",level:"Beginner",
+   pages:[
+    {en:"Leo was a young lion afraid of everything. His friends laughed at him every day. But deep inside, Leo wanted to be brave like his father — the greatest lion in the jungle.",ur:"لیو ایک نوجوان شیر تھا جو سب سے ڈرتا تھا۔ دوست ہنستے۔ لیکن دل میں باپ جیسا بہادر بننا چاہتا تھا۔"},
+    {en:"One stormy night, a tiny rabbit fell into a deep hole. Leo trembled with fear, but stepped forward anyway. With his shaking paws, he rescued the rabbit and saved its life!",ur:"طوفانی رات خرگوش گڑھے میں گرا۔ لیو کانپا لیکن آگے بڑھا۔ خرگوش کو بچایا!"},
+    {en:"The wise elephant declared: 'True courage is doing right while afraid.' Leo roared with pride for the very first time — and all the animals cheered! 🦁",ur:"بزرگ ہاتھی بولا: 'حقیقی بہادری ڈرتے ہوئے صحیح کام کرنا ہے۔' لیو نے فخر سے دھاڑا! 🦁"},
+    {en:"From that day, Leo helped every animal in need. The jungle remembered: bravery isn't absence of fear — it's choosing to act despite it. Leo became the most loved lion of all.",ur:"اس دن سے لیو نے ہر جانور کی مدد کی۔ جنگل نے یاد رکھا: بہادری ڈر نہ ہونا نہیں — یہ ڈر کے باوجود عمل کرنا ہے۔ لیو سب سے پیارا شیر بن گیا۔"},
+   ]},
+  {id:2,type:"success",emoji:"🌾",titleEn:"The Farmer's Dream",titleUr:"کسان کا خواب",level:"Beginner",
+   pages:[
+    {en:"Ahmed was the poorest farmer. His rocky land grew only stones. Neighbors laughed. But Ahmed had one dream: to grow the sweetest apples in all of Pakistan.",ur:"احمد غریب ترین کسان۔ پتھریلی زمین۔ سب ہنستے۔ لیکن خواب: پاکستان کے میٹھے ترین سیب۔"},
+    {en:"Three harvests failed. Three years of tears. But every dead tree taught him something new. He said: 'I will plant again tomorrow.' And he always did.",ur:"تین سال ناکامی۔ تین سال آنسو۔ لیکن ہر مرا درخت کچھ سکھاتا۔ 'کل دوبارہ لگاؤں گا۔'"},
+    {en:"Year four — the trees bloomed with red apples! Ahmed's apples became famous. He built a school for village children. Those who laughed now called him their hero.",ur:"چوتھا سال - سرخ سیب! مشہور ہوئے۔ اسکول بنایا۔ جو ہنستے تھے بولے: 'تم ہمارے ہیرو ہو!'"},
+    {en:"Ahmed always said: 'The ground was never the problem. My patience was the seed that needed planting.' His village became the apple capital of Pakistan! 🍎",ur:"احمد کہتا: 'زمین کبھی مسئلہ نہ تھی۔ میرا صبر وہ بیج تھا جو لگانا تھا۔' اس کا گاؤں پاکستان کا سیب دارالحکومت بن گیا! 🍎"},
+   ]},
+  {id:3,type:"story",emoji:"📚",titleEn:"The Library Girl",titleUr:"لائبریری والی لڑکی",level:"Intermediate",
+   pages:[
+    {en:"Sana had no TV, no toys — but her mother gave her one gift: a library card. From age seven, she visited every single day after school.",ur:"ثنا کے گھر نہ ٹی وی نہ کھلونے۔ ماں نے لائبریری کارڈ دیا۔ سات سال سے ہر روز جاتی۔"},
+    {en:"She read science, history, poetry, and business books. Knowledge became her superpower. Her imagination grew like a garden in spring.",ur:"سائنس، تاریخ، شاعری، کاروبار سب پڑھا۔ علم سپر پاور بنا۔ تخیل بہار کے باغ کی طرح بڑھا۔"},
+    {en:"At sixteen, she won a national competition, beating university students. 'Reading,' her teacher said, 'is the superpower money cannot buy.'",ur:"سولہ سال میں قومی مقابلہ جیتا۔ استاد نے کہا: 'پڑھنا وہ سپر پاور ہے جو پیسے سے نہیں ملتی۔'"},
+    {en:"Dr. Sana now runs fifty free libraries across Pakistan. 'A child who reads becomes an adult who changes the world.' One card changed everything. 📖",ur:"ڈاکٹر ثنا اب پچاس مفت لائبریریاں چلاتی ہیں۔ 'پڑھنے والا بچہ دنیا بدلنے والا بڑا بنتا ہے۔' ایک کارڈ نے سب بدل دیا۔ 📖"},
+   ]},
+  {id:4,type:"comic",emoji:"🚀",titleEn:"The Space Dreamer",titleUr:"خلائی خواب دیکھنے والا",level:"Advanced",
+   pages:[
+    {en:"Zain grew up with no electricity. Every night he lay on the rooftop, staring at stars for hours, whispering: 'I will reach you one day.'",ur:"زین کے گاؤں بجلی نہیں۔ ہر رات چھت پر ستاروں کو دیکھتا: 'ایک دن تم تک پہنچوں گا۔'"},
+    {en:"The village laughed at him. But Zain walked six kilometers to school, studied by candlelight, and never once stopped dreaming.",ur:"گاؤں ہنسا۔ لیکن زین روز چھ کلومیٹر پیدل، شمع میں پڑھا، خواب کبھی نہ چھوڑا۔"},
+    {en:"At thirty-two, Astronaut Zain looked down at Earth from the Space Station, tears in his eyes: 'Impossible just means no one has done it yet.'",ur:"بتیس سال میں خلاباز زین نے خلائی اسٹیشن سے زمین دیکھی: 'ناممکن کا مطلب ابھی تک کوئی نہیں کیا۔'"},
+    {en:"Zain wrote a letter to every village child: 'Those stars you see at night? They are waiting for you. Never let anyone switch off your dreams.' 🌟",ur:"زین نے ہر گاؤں کے بچے کو خط لکھا: 'جو ستارے تم رات کو دیکھتے ہو؟ وہ تمہارا انتظار کر رہے ہیں۔ کبھی خواب کا چراغ نہ بجھنے دو۔' 🌟"},
+   ]},
+  {id:5,type:"story",emoji:"🦋",titleEn:"The Ugly Caterpillar",titleUr:"بدصورت سنڈی",level:"Beginner",
+   pages:[
+    {en:"Cami was the smallest, slowest creature in the garden. A peacock laughed: 'You will never be special.' Cami wondered if he was right.",ur:"کامی سب سے چھوٹی، سست سنڈی۔ مور ہنسا: 'تم خاص نہ بنو گی۔' کامی نے سوچا شاید سچ ہے۔"},
+    {en:"Then Cami built a dark, lonely cocoon. Inside, a voice whispered: 'This darkness is not the end. You are becoming something beautiful.'",ur:"کامی نے کوکون بنایا۔ اندر آواز آئی: 'یہ اندھیرا انجام نہیں۔ تم خوبصورت بن رہی ہو۔'"},
+    {en:"Out came wings of gold, pink, and purple. Cami flew past the peacock thinking: 'Every dark day was a wing forming.' 🦋",ur:"سونے، گلابی، جامنی پر! مور کے پاس سے اڑی: 'ہر اندھیرا دن ایک پر بنا رہا تھا۔' 🦋"},
+    {en:"The garden never forgot Cami's lesson: transformation needs darkness. Every cocoon — every hard time — is just a wing being formed in secret. 💜",ur:"باغ نے کامی کا سبق نہ بھولا: تبدیلی کو اندھیرے کی ضرورت ہوتی ہے۔ ہر کوکون — ہر مشکل وقت — صرف ایک پر ہے جو خفیہ بن رہا ہے۔ 💜"},
+   ]},
+  {id:6,type:"success",emoji:"💡",titleEn:"The Girl Who Changed Pakistan",titleUr:"وہ لڑکی جس نے پاکستان بدلا",level:"Intermediate",
+   pages:[
+    {en:"Nadia, age fourteen, noticed her village had no clean water. Everyone said 'Someone should fix this.' Nadia thought: 'Why not me?'",ur:"نادیہ چودہ سال کی۔ گاؤں میں صاف پانی نہیں۔ سب کہتے 'کوئی ٹھیک کرے۔' نادیہ نے سوچا: 'کیوں نہ میں؟'"},
+    {en:"She taught herself to code, built an app 'Clean Drop' that mapped clean water in 40 districts, and entered a national competition.",ur:"کوڈنگ سیکھی، 'Clean Drop' app بنایا، چالیس ضلعوں میں صاف پانی۔ قومی مقابلے میں گئی۔"},
+    {en:"She won! At sixteen, her app helped two million people. She spoke at the United Nations. Age is just a number when passion is real.",ur:"جیتی! سولہ سال میں دو ملین لوگوں کی مدد۔ اقوام متحدہ میں بولی۔ جنون ہو تو عمر بس نمبر ہے۔"},
+    {en:"Today Nadia teaches coding to 500 village girls for free. Her message: 'The problem in front of you is not a burden — it is your purpose.' 💧",ur:"آج نادیہ ۵۰۰ گاؤں کی لڑکیوں کو مفت کوڈنگ سکھاتی ہے۔ پیغام: 'تمہارے سامنے کا مسئلہ بوجھ نہیں — یہ تمہارا مقصد ہے۔' 💧"},
+   ]},
+  {id:7,type:"comic",emoji:"🎤",titleEn:"Street Boy to Speaker",titleUr:"سڑک سے اسٹیج تک",level:"Advanced",
+   pages:[
+    {en:"Bilal sold newspapers barefoot at age eight. His feet dirty, clothes torn. But every paper he sold, he read first — word by word, filling a trash notebook with English words.",ur:"بلال آٹھ سال سے ننگے پاؤں اخبار بیچتا۔ لیکن ہر اخبار پہلے پڑھتا — لفظ لفظ۔"},
+    {en:"A teacher saw him reading outside and offered free lessons. Bilal's day: 5AM papers, 8AM school, 7PM study. Three brutal years — then HIGHEST marks in the city!",ur:"استاد نے مفت پڑھانے کی دعوت دی۔ تین سخت سال — پھر شہر میں سب سے زیادہ نمبر!"},
+    {en:"Today Bilal is a famous speaker in London, New York, Dubai. His book sold a million copies. He always holds up an old newspaper: 'This is where my university began.'",ur:"آج لندن، نیویارک، دبئی میں مشہور۔ دس لاکھ کتابیں بکیں۔ پرانا اخبار پکڑ کر: 'یہاں سے میری یونیورسٹی شروع ہوئی۔'"},
+    {en:"Bilal's foundation has educated 10,000 street children. Every year he finds one brilliant child and sponsors their full education. The chain of kindness never breaks. 🎤",ur:"بلال فاؤنڈیشن نے ۱۰ ہزار بچوں کو پڑھایا۔ ہر سال ایک ذہین بچہ ڈھونڈتا اور مکمل تعلیم دیتا ہے۔ مہربانی کی زنجیر نہیں ٹوٹتی۔ 🎤"},
+   ]},
+  {id:8,type:"story",emoji:"🌊",titleEn:"The Magic Ocean",titleUr:"جادوئی سمندر",level:"Intermediate",
+   pages:[
+    {en:"Old Hassan fished for forty years. One foggy morning his net pulled up a glowing bottle sealed in gold wax — inside, an ancient map with an X beneath the deepest waves.",ur:"بوڑھے حسن نے چالیس سال مچھلی پکڑی۔ ایک صبح جال میں چمکتی بوتل — اندر نقشہ!"},
+    {en:"Hassan dove deep and found an underwater city of pearl palaces. Mermaids with golden hair sang: 'We waited 500 years for a fisherman with a pure heart.'",ur:"گہرا اترا۔ موتیوں کے محل۔ جل پریاں گائیں: 'پانچ سو سال سے پاک دل ماہی گیر کا انتظار تھا۔'"},
+    {en:"Offered one wish, Hassan said: 'Let every fisherman's family have enough food. Let no child sleep hungry.' The queen wept — in 500 years, first to wish for others.",ur:"خواہش ملی۔ حسن نے کہا: 'ہر بچہ بھوکا نہ سوئے۔' ملکہ رویا — پانچ سو سال میں پہلا جس نے دوسروں کے لیے مانگا۔"},
+    {en:"The sea became forever calm for all fishermen. Hassan's village never knew hunger again. And every night, the ocean still glows gold — remembering the fisherman with the golden heart. 🌊",ur:"سمندر ہمیشہ کے لیے پرسکون ہو گیا۔ حسن کے گاؤں نے کبھی بھوک نہ دیکھی۔ اور ہر رات سمندر سنہری چمکتا ہے — سنہرے دل والے ماہی گیر کو یاد کرتا۔ 🌊"},
+   ]},
+  {id:9,type:"comic",emoji:"🤖",titleEn:"Robot's First Day",titleUr:"روبوٹ کا پہلا دن",level:"Beginner",
+   pages:[
+    {en:"R2B arrived at school in a tiny blue tie. First day disaster! He answered too fast, his drawing looked like an earthquake, his lunch tray crashed THREE times.",ur:"R2B ننھی نیلی ٹائی میں آیا۔ پہلا دن تباہی! بہت تیز جواب، تصویر زلزلہ، لنچ ٹرے تین بار گری!"},
+    {en:"Kind Aisha helped him: 'I drop things too — sit with me?' R2B's sensors detected something new: WARMTH. He had never felt it before. His LED eyes glowed.",ur:"آئشہ نے مدد کی: 'میں بھی گراتی ہوں — ساتھ بیٹھو گے؟' R2B نے پہلی بار گرماہٹ محسوس کی۔"},
+    {en:"Year-end, R2B had installed KINDNESS.EXE. Most popular student — not for being smart, but for remembering every birthday and telling terrible jokes that somehow worked.",ur:"سال آخر: KINDNESS.EXE انسٹال۔ سب سے مقبول — سمارٹ نہیں، مہربان تھا۔"},
+    {en:"R2B taught the school: intelligence opens doors, but kindness builds homes. His final speech: 'I came with circuits. I leave with a heart.' Everyone cried — even the principal! 🤖❤️",ur:"R2B نے سکھایا: ذہانت دروازے کھولتی ہے، لیکن مہربانی گھر بناتی ہے۔ الوداعی تقریر: 'سرکٹ لے کر آیا۔ دل لے کر جا رہا ہوں۔' سب روئے! 🤖❤️"},
+   ]},
+  {id:10,type:"story",emoji:"🌳",titleEn:"The Wise Tree",titleUr:"عقل مند درخت",level:"Intermediate",
+   pages:[
+    {en:"In a forest stood a 500-year-old tree. It had seen empires rise and fall, wars and peace, seeds of kindness and cruelty. The tree knew life's deepest secrets.",ur:"جنگل میں پانچ سو سال پرانا درخت۔ سلطنتیں، جنگیں، امن — سب دیکھا۔ زندگی کے راز جانتا تھا۔"},
+    {en:"A boy sat under it, heartbroken after failing his exam. The tree whispered through its leaves: 'Storms broke my branches too. But every spring, I grow new leaves. Failure is just a season.'",ur:"لڑکا امتحان ناکام ہو کر بیٹھا۔ درخت بولا: 'طوفان نے مجھے بھی توڑا۔ لیکن ہر بہار پتے آئے۔ ناکامی بس ایک موسم ہے۔'"},
+    {en:"He studied again, passed, became a teacher. Years later he brought his children: 'This tree taught me that life is about growing — not about never falling.'",ur:"دوبارہ پڑھا، پاس ہوا، استاد بنا۔ بچوں کو لایا: 'درخت نے سکھایا — زندگی بڑھنے کے بارے میں ہے۔'"},
+    {en:"The tree still stands. Thousands have sat beneath it with broken hearts. Every one left with hope. Sometimes the oldest wisdom is already rooted in the earth, waiting for you. 🌳",ur:"درخت اب بھی کھڑا ہے۔ ہزاروں ٹوٹے دلوں نے اس کے نیچے بیٹھا۔ ہر کوئی امید لے کر گیا۔ کبھی کبھی سب سے پرانی حکمت زمین میں جڑی ہوتی ہے، تمہارا انتظار کرتی۔ 🌳"},
+   ]},
+  {id:11,type:"comic",emoji:"🎨",titleEn:"The Artist's Dream",titleUr:"فنکار کا خواب",level:"Beginner",
+   pages:[
+    {en:"Aisha loved to paint but had no supplies. She painted with mud on walls, charcoal on rocks, juice on paper. Her art was beautiful even with nothing.",ur:"عائشہ پینٹنگ پسند کرتی لیکن رنگ نہ تھے۔ مٹی، کوئلے، جوس سے پینٹ کرتی۔ کچھ نہیں تھا پھر بھی خوبصورت۔"},
+    {en:"A businessman saw her wall mural and gave her real paints. But Aisha discovered: the passion in the heart matters more than the materials in the hand.",ur:"کاروباری نے دیوار پر نقاشی دیکھی، رنگ دیے۔ لیکن عائشہ نے سیکھا: دل کا جنون ہاتھ کے سامان سے زیادہ اہم ہے۔"},
+    {en:"Today her paintings hang in world museums. She tells young artists: 'Don't wait for perfect conditions. Start with what you have. Passion beats any material.'",ur:"آج دنیا کے عجائب گھروں میں۔ نوجوانوں سے: 'کامل حالات کا انتظار 
