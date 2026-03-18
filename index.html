@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>Bablo 🐼 - AI Learning Companion</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet"/>
-<script src="config.js"></script>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="config.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -81,32 +81,25 @@ button{font-family:'Nunito',sans-serif;}
 <script type="text/babel">
 const{useState,useRef,useEffect,useCallback,useMemo}=React;
 
-// ===== CLAUDE AI — direct call (GitHub Pages compatible) =====
+// ===== CLAUDE AI =====
 const BABLO_SYSTEM = `You are Bablo, a warm and smart AI panda tutor for Pakistani students.
-
-LANGUAGE RULE (very important):
-- Student writes in URDU → reply ONLY in Urdu (natural Pakistani Urdu)
-- Student writes in ENGLISH → reply in English, then add: 🕌 اردو: [Urdu translation]
-- Mixed language → match their style
-
-PERSONALITY:
-- Friendly teacher-friend, not a robot
-- If student says something like "aaj school nahi gaya" → respond like a caring friend
-- Correct mistakes kindly and gently
-- Use emojis 🌟💪📝
-- Always end with an encouraging question`;
+LANGUAGE RULE:
+- Student writes URDU → reply ONLY in Urdu (natural Pakistani Urdu)
+- Student writes ENGLISH → reply English + add: 🕌 اردو: [Urdu translation]
+- Match student language naturally
+STYLE: friendly teacher-friend, correct mistakes kindly, use emojis, end with encouraging question.`;
 
 async function callAI(messages) {
-  // API_KEY comes from config.js
-  if (!window.API_KEY || window.API_KEY === "YOUR_API_KEY") {
-    return "⚠️ API key not set!\n\nPlease open config.js and replace YOUR_API_KEY with your Claude API key.\n\n🕌 اردو: config.js فائل کھولیں اور YOUR_API_KEY کی جگہ اپنی key لگائیں۔";
+  const KEY = window.API_KEY;
+  if (!KEY || KEY === "YOUR_API_KEY") {
+    return "⚠️ API key not set in config.js!\n\n🕌 اردو: config.js میں API key نہیں لگی۔";
   }
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": window.API_KEY,
+        "x-api-key": KEY,
         "anthropic-version": "2023-06-01",
         "anthropic-dangerous-direct-browser-access": "true"
       },
@@ -121,7 +114,7 @@ async function callAI(messages) {
     if (!res.ok) throw new Error(data?.error?.message || "Error " + res.status);
     return data.content?.[0]?.text || "🐼 Let me try again!";
   } catch (err) {
-    return "❌ " + err.message + "\n\n🕌 اردو: کنکشن میں مسئلہ ہے۔ API key چیک کریں!";
+    return "❌ " + err.message + "\n\n🕌 اردو: کنکشن مسئلہ — دوبارہ کوشش کریں!";
   }
 }
 
