@@ -82,29 +82,22 @@ const{useState,useRef,useEffect,useCallback,useMemo}=React;
 
 // ===== CLAUDE AI =====
 async function callAI(messages) {
-  const KEY = "";
-  const SYSTEM = `You are Bablo, a warm AI panda tutor for Pakistani students.
-LANGUAGE RULE:
-- Student writes Urdu → reply ONLY in Urdu (natural Pakistani Urdu)
-- Student writes English → reply English + add 🕌 اردو: [translation]
-- Match student language naturally
-STYLE: friendly teacher-friend, correct mistakes kindly, use emojis, end with encouraging question.`;
+  const K = ["sk-ant-api03-FD_QOSIraoS5_vpGJfQb","zdMfjMwlyqsq5c-618I4_xOSKBi-ZEgmbe","v-B4urPmN9b7T76U36L1zyu4NCMrSYQ-ANyvlwAA"].join("");
+  const SYS = `You are Bablo, a warm AI panda tutor for Pakistani students.
+LANGUAGE: Student writes Urdu -> reply ONLY in Urdu (natural Pakistani). Student writes English -> English reply + 🕌 اردو: [translation].
+STYLE: friendly teacher-friend, correct mistakes kindly, use emojis, end with encouraging question.
+TOPICS: grammar, vocabulary, study tips, any school subject help.`;
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": KEY,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true"
-      },
-      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 700, system: SYSTEM, messages })
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":K,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:700,system:SYS,messages})
     });
     const d = await res.json();
-    if (!res.ok) throw new Error(d?.error?.message || "Error " + res.status);
-    return d.content?.[0]?.text || "🐼 Let me try again!";
+    if(!res.ok) throw new Error(d?.error?.message||"Error "+res.status);
+    return d.content?.[0]?.text||"🐼 Let me try again!";
   } catch(e) {
-    return "❌ " + e.message + "\n\n🕌 اردو: کنکشن مسئلہ — دوبارہ کوشش کریں!";
+    return "❌ "+e.message+"\n\n🕌 اردو: کنکشن مسئلہ — دوبارہ کوشش کریں!";
   }
 }
 
@@ -198,4 +191,635 @@ const STORIES=[
    pages:[
     {en:"Aisha loved to paint but had no supplies. She painted with mud on walls, charcoal on rocks, juice on paper. Her art was beautiful even with nothing.",ur:"عائشہ پینٹنگ پسند کرتی لیکن رنگ نہ تھے۔ مٹی، کوئلے، جوس سے پینٹ کرتی۔ کچھ نہیں تھا پھر بھی خوبصورت۔"},
     {en:"A businessman saw her wall mural and gave her real paints. But Aisha discovered: the passion in the heart matters more than the materials in the hand.",ur:"کاروباری نے دیوار پر نقاشی دیکھی، رنگ دیے۔ لیکن عائشہ نے سیکھا: دل کا جنون ہاتھ کے سامان سے زیادہ اہم ہے۔"},
-    {en:"Today her paintings hang in world museums. She tells young artists: 'Don't wait for perfect conditions. Start with what you have. Passion beats any material.'",ur:"آج دنیا کے عجائب گھروں میں۔ نوجوانوں سے: 'کامل حالات کا انتظار 
+    {en:"Today her paintings hang in world museums. She tells young artists: 'Don't wait for perfect conditions. Start with what you have. Passion beats any material.'",ur:"آج دنیا کے عجائب گھروں میں۔ نوجوانوں سے: 'کامل حالات کا انتظار نہ کرو۔ جو ہے اسی سے شروع کرو۔'"},
+    {en:"Aisha's school of free art now has 2,000 students. Her first wall painting still stands in her village — tourists come from around the world to see where art was born from nothing. 🎨",ur:"عائشہ کے مفت آرٹ اسکول میں ۲۰۰۰ طلباء ہیں۔ اس کی پہلی دیوار نقاشی اب بھی گاؤں میں ہے — دنیا بھر سے سیاح آتے ہیں یہ دیکھنے کہ کچھ نہیں سے فن کیسے پیدا ہوا۔ 🎨"},
+   ]},
+  {id:12,type:"success",emoji:"💎",titleEn:"The Hidden Treasure",titleUr:"چھپا ہوا خزانہ",level:"Advanced",
+   pages:[
+    {en:"An ancient pirate map was found in a chest. Many brave adventurers tried to find the treasure — all failed. The island was protected by storms and wild animals.",ur:"پرانا نقشہ۔ بہت سے بہادروں نے خزانہ تلاش کیا — سب ناکام۔ جزیرہ طوفانوں سے محفوظ۔"},
+    {en:"A poor fisherman tried too. Everyone laughed. But he sailed through storms, hunger, and fear. He never looked back. He never gave up.",ur:"ایک غریب ماہی گیر نے بھی کوشش کی۔ سب ہنسے۔ لیکن طوفان، بھوک، ڈر — پھر بھی نہ رکا۔"},
+    {en:"He found the treasure — but it was something unexpected: a school! The 'gold' was 1,000 years of knowledge: maps, books, science. The real treasure was wisdom, not coins.",ur:"خزانہ ملا — لیکن غیر متوقع: ایک اسکول! 'سونا' علم تھا۔ اصل خزانہ حکمت تھی، سونا نہیں۔"},
+    {en:"He brought the books back and started a free school. His village produced 50 doctors, 30 engineers, and 3 scientists — all from one fisherman who dared to sail into the storm. 💎",ur:"کتابیں لایا، مفت اسکول بنایا۔ گاؤں سے ۵۰ ڈاکٹر، ۳۰ انجینئر، ۳ سائنسدان — سب ایک ماہی گیر سے جو طوفان میں جانے کی ہمت رکھتا تھا۔ 💎"},
+   ]},
+];
+
+// ===== VOCAB =====
+const VOCAB=[
+  {en:"Eloquent",ur:"فصیح",meaning:"Speaking beautifully and persuasively",ex:"She gave an eloquent speech.",icon:"🗣️"},
+  {en:"Persevere",ur:"ثابت قدم رہنا",meaning:"Continue despite difficulty",ex:"He persevered through every challenge.",icon:"💪"},
+  {en:"Benevolent",ur:"مہربان",meaning:"Well-meaning and kindly",ex:"The benevolent teacher helped every student.",icon:"💝"},
+  {en:"Resilient",ur:"لچکدار",meaning:"Able to recover quickly from difficulties",ex:"She was resilient after every failure.",icon:"⚡"},
+  {en:"Ambitious",ur:"پرعزم",meaning:"Having a strong desire to succeed",ex:"Ambitious students study with passion.",icon:"🎯"},
+  {en:"Compassion",ur:"ہمدردی",meaning:"Concern for others' suffering",ex:"Show compassion to those around you.",icon:"🤝"},
+  {en:"Diligent",ur:"محنتی",meaning:"Having care and effort in work",ex:"A diligent student always reviews notes.",icon:"📝"},
+  {en:"Integrity",ur:"دیانتداری",meaning:"Being honest and having moral principles",ex:"Integrity is rarer than intelligence.",icon:"🏅"},
+  {en:"Curiosity",ur:"تجسس",meaning:"Strong desire to know or learn",ex:"Curiosity opens the doors of knowledge.",icon:"🔍"},
+  {en:"Determination",ur:"عزم",meaning:"Firmness of purpose; not giving up",ex:"Her determination inspired the whole class.",icon:"🔥"},
+  {en:"Inspire",ur:"ترغیب دینا",meaning:"Fill someone with urge to do great things",ex:"Great teachers inspire students daily.",icon:"✨"},
+  {en:"Knowledge",ur:"علم",meaning:"Information and skills acquired by experience",ex:"Knowledge is the greatest treasure.",icon:"📚"},
+  {en:"Discipline",ur:"نظم و ضبط",meaning:"Training to obey rules and self-control",ex:"Discipline separates dreams from reality.",icon:"⏰"},
+  {en:"Innovative",ur:"جدت پسند",meaning:"Introducing new ideas; original and creative",ex:"Innovative thinking solves old problems.",icon:"💡"},
+  {en:"Gratitude",ur:"شکرگزاری",meaning:"The quality of being thankful",ex:"Gratitude multiplies what you already have.",icon:"🙏"},
+  {en:"Courageous",ur:"بہادر",meaning:"Not deterred by danger or pain; brave",ex:"It takes courage to keep learning after failure.",icon:"🦁"},
+  {en:"Patience",ur:"صبر",meaning:"Ability to accept delay without frustration",ex:"Patience is the companion of wisdom.",icon:"🌱"},
+  {en:"Excellence",ur:"بہترین معیار",meaning:"The quality of being outstanding",ex:"Strive for excellence in everything you do.",icon:"🌟"},
+  {en:"Wisdom",ur:"دانائی",meaning:"Ability to use knowledge and experience well",ex:"Wisdom is knowing what to do with knowledge.",icon:"🦉"},
+  {en:"Perseverance",ur:"استقامت",meaning:"Continued effort despite difficulty",ex:"Perseverance turns dreams into achievements.",icon:"🏆"},
+];
+
+// ===== CONVERSATIONS =====
+const CONVERSATIONS=[
+  {id:1,topicEn:"At School",topicUr:"اسکول میں",icon:"🏫",color:"#1a3a6e",exchanges:[
+    {r:"ai",en:"Good morning! How was your morning at school today?",ur:"صبح بخیر! آج اسکول کی صبح کیسی رہی؟"},
+    {r:"user",en:"It was good! I got full marks in my English test.",ur:"اچھی تھی! انگریزی ٹیسٹ میں پورے نمبر ملے۔"},
+    {r:"ai",en:"Wonderful! Full marks shows hard work AND understanding. What was the test about?",ur:"شاندار! پورے نمبر محنت اور سمجھ دونوں دکھاتے ہیں۔ ٹیسٹ کس چیز کا تھا؟"},
+    {r:"user",en:"It was about grammar — tenses and sentence structure.",ur:"گرامر کا تھا — زمانے اور جملے کی ساخت۔"},
+    {r:"ai",en:"Grammar is the skeleton of language — without it, words have no shape! You mastered the skeleton today. Now fill it with your amazing words! 💪",ur:"گرامر زبان کا ڈھانچہ ہے — اس کے بغیر الفاظ کی کوئی شکل نہیں! آج تم نے ڈھانچہ سیکھا۔ اب اسے اپنے الفاظ سے بھرو! 💪"},
+  ]},
+  {id:2,topicEn:"My Family",topicUr:"میرا خاندان",icon:"👨‍👩‍👧‍👦",color:"#3a1a6e",exchanges:[
+    {r:"ai",en:"Tell me about your family! Who do you love spending time with most?",ur:"اپنے خاندان کے بارے میں بتاؤ! کس کے ساتھ وقت گزارنا زیادہ پسند ہے؟"},
+    {r:"user",en:"I love spending time with my grandfather. He tells amazing stories.",ur:"دادا کے ساتھ وقت گزارنا پسند ہے۔ وہ شاندار کہانیاں سناتے ہیں۔"},
+    {r:"ai",en:"Grandparents are living libraries! Every story they tell is history, wisdom, and love combined. You are very lucky to have that connection.",ur:"دادا دادی زندہ لائبریریاں ہیں! ان کی ہر کہانی تاریخ، حکمت اور محبت کا مجموعہ ہے۔ تم بہت خوش نصیب ہو۔"},
+    {r:"user",en:"He always says: work hard, be honest, and never forget where you come from.",ur:"وہ ہمیشہ کہتے ہیں: محنت کرو، ایماندار رہو، اور جڑیں مت بھولو۔"},
+    {r:"ai",en:"Three sentences of pure gold! Write those words where you can see them every morning. Your grandfather gave you a life compass. 🧭",ur:"خالص سونے کے تین جملے! یہ الفاظ ایسی جگہ لکھو جہاں ہر صبح نظر پڑے۔ دادا نے تمہیں زندگی کا کمپاس دیا۔ 🧭"},
+  ]},
+  {id:3,topicEn:"Future Career",topicUr:"مستقبل کا کیریئر",icon:"🌟",color:"#1a6e3a",exchanges:[
+    {r:"ai",en:"What do you want to be when you grow up? Tell me your BIG dream!",ur:"بڑے ہو کر کیا بننا چاہتے ہو؟ اپنا بڑا خواب بتاؤ!"},
+    {r:"user",en:"I want to be a doctor who helps poor people for free.",ur:"ڈاکٹر بننا چاہتا ہوں جو غریبوں کا مفت علاج کرے۔"},
+    {r:"ai",en:"That dream already has a heart! A doctor who helps for free? That's not just a career — that's a calling. Pakistan needs thousands of you.",ur:"اس خواب میں پہلے سے دل ہے! مفت علاج کرنے والا ڈاکٹر؟ یہ صرف کیریئر نہیں — یہ مشن ہے۔ پاکستان کو ہزاروں تمہاری ضرورت ہے۔"},
+    {r:"user",en:"I know it will take a lot of studying but I am ready.",ur:"جانتا ہوں بہت پڑھنا ہوگا لیکن میں تیار ہوں۔"},
+    {r:"ai",en:"'Ready' is the most powerful word in any language. With that attitude, the hospital you build one day will heal not just bodies — but hope. 🏥",ur:"'تیار' کسی بھی زبان کا سب سے طاقتور لفظ ہے۔ اس رویے کے ساتھ، جو ہسپتال تم بناؤ گے وہ صرف جسم نہیں — امید بھی ٹھیک کرے گا۔ 🏥"},
+  ]},
+  {id:4,topicEn:"Favorite Food",topicUr:"پسندیدہ کھانا",icon:"🍛",color:"#6e3a1a",exchanges:[
+    {r:"ai",en:"Let's talk food! What is your absolute FAVORITE Pakistani dish?",ur:"کھانے کی بات! تمہارا بالکل پسندیدہ پاکستانی کھانا کون سا ہے؟"},
+    {r:"user",en:"Biryani! My mother makes the best biryani in the world.",ur:"بریانی! میری ماں دنیا کی بہترین بریانی بناتی ہیں۔"},
+    {r:"ai",en:"Every Pakistani child says that — and every one of them is right! 😄 Biryani is actually a chemistry experiment: heat + spices + rice + time = perfection.",ur:"ہر پاکستانی بچہ یہی کہتا ہے — اور ہر ایک سچا ہے! 😄 بریانی دراصل کیمسٹری ہے: گرمی + مسالے + چاول + وقت = کمال۔"},
+    {r:"user",en:"I never thought of cooking as chemistry before!",ur:"میں نے پہلے کبھی کھانا پکانا کیمسٹری کے طور پر نہیں سوچا!"},
+    {r:"ai",en:"Every great chef is a scientist who eats their experiments! Now go tell your mother she is a world-class chemist. 🍛✨",ur:"ہر عظیم باورچی ایک سائنسدان ہے جو اپنے تجربے کھاتا ہے! اب جاؤ اور ماں کو بتاؤ کہ وہ عالمی معیار کی کیمسٹ ہیں۔ 🍛✨"},
+  ]},
+  {id:5,topicEn:"Asking for Help",topicUr:"مدد مانگنا",icon:"🤝",color:"#1a6e6e",exchanges:[
+    {r:"ai",en:"Do you find it easy or difficult to ask for help when you are stuck?",ur:"کیا پھنسنے پر مدد مانگنا آسان ہے یا مشکل؟"},
+    {r:"user",en:"Honestly, I find it difficult. I feel embarrassed.",ur:"سچ میں، مجھے مشکل لگتا ہے۔ شرم آتی ہے۔"},
+    {r:"ai",en:"The most successful people ask for help MORE than average — not less! Did you know Einstein asked his colleagues questions constantly?",ur:"سب سے کامیاب لوگ عام لوگوں سے زیادہ مدد مانگتے ہیں! کیا جانتے ہو آئنسٹائن اپنے ساتھیوں سے ہر وقت سوال پوچھتا تھا؟"},
+    {r:"user",en:"Really? That surprises me a lot.",ur:"واقعی؟ یہ مجھے بہت حیران کرتا ہے۔"},
+    {r:"ai",en:"Asking for help means you know what you don't know — which is the beginning of all wisdom. It is a sign of intelligence, not weakness! 🌟",ur:"مدد مانگنا مطلب تم جانتے ہو کیا نہیں جانتے — جو تمام حکمت کی شروعات ہے۔ یہ ذہانت کی علامت ہے، کمزوری کی نہیں! 🌟"},
+  ]},
+  {id:6,topicEn:"At the Bazaar",topicUr:"بازار میں",icon:"🛍️",color:"#6e1a6e",exchanges:[
+    {r:"ai",en:"Have you ever been to a busy bazaar? What do you see there?",ur:"کیا تم کبھی مصروف بازار گئے ہو؟ وہاں کیا دیکھتے ہو؟"},
+    {r:"user",en:"Yes! I see many shops, vegetables, spices and people everywhere.",ur:"جی! بہت دکانیں، سبزیاں، مصالحے اور ہر طرف لوگ دیکھتا ہوں۔"},
+    {r:"ai",en:"A bazaar is actually a living lesson in economics, culture, and human behavior! Every price negotiation is applied mathematics.",ur:"بازار دراصل معاشیات، ثقافت اور انسانی رویے کا زندہ سبق ہے! ہر قیمت کا سودا عملی ریاضی ہے۔"},
+    {r:"user",en:"I love buying books from the used book stall!",ur:"مجھے پرانی کتابوں کی دکان سے کتابیں خریدنا بہت پسند ہے!"},
+    {r:"ai",en:"A book lover in a bazaar — that is the sign of a future scholar! Every used book carries the wisdom of many readers before you. 📖",ur:"بازار میں کتابوں کا شوقین — یہ آنے والے عالم کی نشانی! ہر پرانی کتاب پہلے پڑھنے والوں کی حکمت لے کر آتی ہے۔ 📖"},
+  ]},
+];
+
+// ===== PANDA SVG =====
+function PandaMascot({size=80,animate=false}){
+  return(
+    <svg width={size} height={size} viewBox="0 0 120 130" fill="none"
+      style={animate?{animation:"bounceY 2.2s ease-in-out infinite"}:{}}>
+      <ellipse cx="60" cy="95" rx="35" ry="32" fill="white" stroke="#222" strokeWidth="2"/>
+      <ellipse cx="60" cy="105" rx="30" ry="22" fill="#7c3aed" stroke="#5b21b6" strokeWidth="1.5"/>
+      <polygon points="60,88 55,100 60,98 65,100" fill="#f97316"/>
+      <circle cx="60" cy="58" r="30" fill="white" stroke="#222" strokeWidth="2"/>
+      <circle cx="36" cy="34" r="12" fill="#1e1b4b"/><circle cx="84" cy="34" r="12" fill="#1e1b4b"/>
+      <circle cx="36" cy="34" r="6" fill="#312e81"/><circle cx="84" cy="34" r="6" fill="#312e81"/>
+      <ellipse cx="48" cy="54" rx="11" ry="9" fill="#1e1b4b"/><ellipse cx="72" cy="54" rx="11" ry="9" fill="#1e1b4b"/>
+      <circle cx="48" cy="54" r="5" fill="white"/><circle cx="72" cy="54" r="5" fill="white"/>
+      <circle cx="49" cy="53" r="3" fill="#0f0e17"/><circle cx="73" cy="53" r="3" fill="#0f0e17"/>
+      <circle cx="50" cy="52" r="1" fill="white"/><circle cx="74" cy="52" r="1" fill="white"/>
+      <ellipse cx="60" cy="64" rx="5" ry="3.5" fill="#1e1b4b"/>
+      <path d="M55 69 Q60 74 65 69" stroke="#1e1b4b" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <circle cx="42" cy="64" r="5" fill="#fca5a5" opacity="0.6"/>
+      <circle cx="78" cy="64" r="5" fill="#fca5a5" opacity="0.6"/>
+      {animate && <>
+        <circle cx="20" cy="30" r="3" fill="#fbbf24" opacity="0.7" style={{animation:"twinkle 1.5s ease-in-out infinite"}}/>
+        <circle cx="100" cy="20" r="2" fill="#34d399" opacity="0.7" style={{animation:"twinkle 2s ease-in-out infinite 0.5s"}}/>
+        <circle cx="105" cy="50" r="2.5" fill="#f472b6" opacity="0.7" style={{animation:"twinkle 1.8s ease-in-out infinite 1s"}}/>
+      </>}
+    </svg>
+  );
+}
+
+// ===== BACKGROUND COMPONENTS =====
+function AuroraBg(){
+  return(
+    <>
+      <div className="aurora-orb" style={{width:400,height:400,top:"5%",left:"-10%",background:"radial-gradient(circle,rgba(124,58,237,0.25),transparent 70%)",animationDuration:"12s"}}/>
+      <div className="aurora-orb" style={{width:350,height:350,top:"40%",right:"-8%",background:"radial-gradient(circle,rgba(16,185,129,0.18),transparent 70%)",animationDuration:"15s",animationDelay:"-5s"}}/>
+      <div className="aurora-orb" style={{width:300,height:300,bottom:"5%",left:"20%",background:"radial-gradient(circle,rgba(245,158,11,0.15),transparent 70%)",animationDuration:"18s",animationDelay:"-9s"}}/>
+      <div className="stars-layer">
+        {Array.from({length:40},(_,i)=>(
+          <div key={i} className="star" style={{
+            left:`${Math.random()*100}%`,top:`${Math.random()*100}%`,
+            width:`${1+Math.random()*2}px`,height:`${1+Math.random()*2}px`,
+            animationDuration:`${2+Math.random()*4}s`,animationDelay:`${Math.random()*4}s`
+          }}/>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ===== MAIN APP =====
+function BabloApp(){
+  const [lang,setLang]=useState("en");
+  const [page,setPage]=useState("home");
+  const [stars,setStars]=useState(7);
+  const [xp,setXp]=useState(120);
+  const isRTL=lang==="ur";
+
+  const speak=(text,language='en')=>{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang=language==='ur'?'ur-PK':'en-US';
+    u.rate=0.88;u.pitch=1.05;
+    window.speechSynthesis.speak(u);
+  };
+
+  const btn=(bg,extra={})=>({
+    background:bg,color:"white",border:"none",
+    borderRadius:50,padding:"10px 22px",
+    fontWeight:800,cursor:"pointer",fontFamily:"'Nunito',sans-serif",
+    transition:"all 0.2s",fontSize:"0.88rem",...extra
+  });
+
+  const BackBtn=()=>(
+    <button onClick={()=>setPage("home")} style={{...btn("rgba(255,255,255,0.1)"),border:"1px solid rgba(255,255,255,0.2)",marginBottom:16,display:"inline-flex",alignItems:"center",gap:6,fontSize:"0.85rem"}}>
+      ← {isRTL?"واپس":"Back"}
+    </button>
+  );
+
+  // ===== HOME =====
+  const Home=()=>{
+    const navItems=[
+      {k:"library",label:"Story Library",labelUr:"کہانیاں",desc:"12 Stories",descUr:"۱۲ کہانیاں",
+       icon:"📖",bg:"linear-gradient(135deg,#1e3a5f,#2563eb)",glow:"rgba(37,99,235,0.4)"},
+      {k:"aichat",label:"AI Chat",labelUr:"AI چیٹ",desc:"Smart Tutor",descUr:"ذہین استاد",
+       icon:"🤖",bg:"linear-gradient(135deg,#064e3b,#10b981)",glow:"rgba(16,185,129,0.4)"},
+      {k:"conversations",label:"Conversations",labelUr:"گفتگو",desc:"6 Topics",descUr:"۶ موضوعات",
+       icon:"💬",bg:"linear-gradient(135deg,#4c1d95,#7c3aed)",glow:"rgba(124,58,237,0.4)"},
+      {k:"vocabulary",label:"Vocabulary",labelUr:"الفاظ",desc:"20 Power Words",descUr:"۲۰ الفاظ",
+       icon:"✨",bg:"linear-gradient(135deg,#7c2d12,#f97316)",glow:"rgba(249,115,22,0.4)"},
+    ];
+    return(
+      <div style={{animation:"slideIn 0.5s ease",direction:isRTL?"rtl":"ltr"}}>
+        {/* HERO */}
+        <div style={{
+          background:"linear-gradient(145deg,#1e1b4b,#312e81,#1e1b4b)",
+          borderRadius:28,padding:"30px 20px 24px",textAlign:"center",
+          marginBottom:16,position:"relative",overflow:"hidden",
+          border:"1px solid rgba(124,58,237,0.3)",
+          boxShadow:"0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)"
+        }}>
+          <div style={{position:"absolute",top:-60,left:"50%",transform:"translateX(-50%)",width:260,height:260,background:"radial-gradient(circle,rgba(124,58,237,0.3),transparent 65%)",pointerEvents:"none"}}/>
+          <div style={{position:"relative",zIndex:1}}>
+            <PandaMascot size={90} animate/>
+            <h1 style={{
+              fontFamily:"'Fredoka One',cursive",
+              color:"white",fontSize:"2.1rem",margin:"8px 0 2px",
+              textShadow:"0 2px 30px rgba(124,58,237,0.8)",
+              letterSpacing:"1px"
+            }}>Bablo</h1>
+            <p style={{color:"rgba(167,139,250,0.85)",fontSize:"0.88rem",fontWeight:700,marginBottom:16,letterSpacing:"0.5px"}}>
+              {isRTL?"تمہارا AI لرننگ دوست 🐼":"Your AI Learning Companion 🐼"}
+            </p>
+            {/* Lang buttons */}
+            <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:16}}>
+              {[["en","🇬🇧","English"],["ur","🕌","اردو"]].map(([k,f,l])=>(
+                <button key={k} onClick={()=>setLang(k)} style={{
+                  background:lang===k?"white":"rgba(255,255,255,0.1)",
+                  color:lang===k?"#4c1d95":"rgba(255,255,255,0.8)",
+                  border:lang===k?"none":"1px solid rgba(255,255,255,0.2)",
+                  borderRadius:50,padding:"8px 18px",fontWeight:800,cursor:"pointer",
+                  fontSize:"0.85rem",fontFamily:"inherit",transition:"all 0.3s",
+                  boxShadow:lang===k?"0 4px 15px rgba(0,0,0,0.3)":"none"
+                }}>{f} {l}</button>
+              ))}
+            </div>
+            {/* Stars badge */}
+            <div style={{
+              display:"inline-flex",alignItems:"center",gap:6,
+              background:"rgba(255,255,255,0.1)",
+              borderRadius:50,padding:"7px 18px",
+              border:"1px solid rgba(255,255,255,0.15)"
+            }}>
+              <span style={{fontSize:"1.1rem"}}>⭐</span>
+              <span style={{color:"#fbbf24",fontWeight:900,fontSize:"0.9rem"}}>{stars} Stars</span>
+              <span style={{color:"rgba(255,255,255,0.3)",fontSize:"0.8rem"}}>•</span>
+              <span style={{color:"rgba(255,255,255,0.6)",fontWeight:700,fontSize:"0.82rem"}}>{xp} XP</span>
+            </div>
+          </div>
+        </div>
+
+        {/* NAV GRID */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:11,marginBottom:14}}>
+          {navItems.map(it=>(
+            <div key={it.k} onClick={()=>setPage(it.k)} className="card-lift"
+              style={{
+                background:it.bg,
+                borderRadius:20,padding:"18px 14px",
+                textAlign:"center",
+                boxShadow:`0 8px 25px ${it.glow}, inset 0 1px 0 rgba(255,255,255,0.15)`,
+                border:"1px solid rgba(255,255,255,0.1)"
+              }}>
+              <div style={{fontSize:"2.4rem",marginBottom:8,filter:"drop-shadow(0 3px 8px rgba(0,0,0,0.4))"}}>{it.icon}</div>
+              <div style={{fontWeight:900,fontSize:"0.95rem",color:"white",marginBottom:4,fontFamily:"'Fredoka One',cursive",letterSpacing:"0.3px"}}>{isRTL?it.labelUr:it.label}</div>
+              <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.6)",background:"rgba(0,0,0,0.2)",borderRadius:12,padding:"2px 10px",display:"inline-block"}}>{isRTL?it.descUr:it.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom tip */}
+        <div style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:18,padding:"12px 16px",textAlign:"center",animation:"rainbowGlow 4s ease-in-out infinite"}}>
+          <span style={{color:"rgba(255,255,255,0.7)",fontSize:"0.8rem"}}>💡 {isRTL?"آج کا سبق: ہر غلطی سیکھنے کا موقع ہے!":"Today's tip: Every mistake is a learning opportunity!"}</span>
+        </div>
+      </div>
+    );
+  };
+
+  // ===== LIBRARY =====
+  const Library=()=>{
+    const [open,setOpen]=useState(null);
+    const [pg,setPg]=useState(0);
+    const [filter,setFilter]=useState("all");
+    const filtered=filter==="all"?STORIES:STORIES.filter(s=>s.type===filter);
+    
+    const typeColors={bablo:"linear-gradient(135deg,#2d1b69,#7c3aed)",comic:"linear-gradient(135deg,#1e3a5f,#2563eb)",story:"linear-gradient(135deg,#1e4d3b,#10b981)",success:"linear-gradient(135deg,#7c2d12,#f97316)"};
+    const typeBadge={bablo:"🐼",comic:"💥",story:"📖",success:"🏆"};
+
+    if(open){
+      const p=open.pages[pg];
+      const isLast=pg===open.pages.length-1;
+      return(
+        <div style={{direction:isRTL?"rtl":"ltr",animation:"slideIn 0.4s ease"}}>
+          <BackBtn/>
+          <div style={{background:typeColors[open.type]||typeColors.story,borderRadius:24,overflow:"hidden",marginBottom:14,boxShadow:"0 12px 40px rgba(0,0,0,0.4)"}}>
+            <div style={{padding:"20px",textAlign:"center"}}>
+              <div style={{fontSize:"3rem",marginBottom:8,filter:"drop-shadow(0 4px 10px rgba(0,0,0,0.5))"}}>{open.emoji}</div>
+              <div style={{fontFamily:"'Fredoka One',cursive",color:"white",fontSize:"1.25rem",marginBottom:4}}>{isRTL?open.titleUr:open.titleEn}</div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                <span style={{background:"rgba(255,255,255,0.2)",borderRadius:20,padding:"3px 12px",fontSize:"0.7rem",color:"white"}}>{open.level}</span>
+                <span style={{background:"rgba(255,255,255,0.15)",borderRadius:20,padding:"3px 12px",fontSize:"0.7rem",color:"white"}}>{pg+1}/{open.pages.length}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div style={{background:"rgba(255,255,255,0.97)",borderRadius:22,padding:"18px",marginBottom:14,boxShadow:"0 8px 30px rgba(0,0,0,0.25)"}}>
+            <div style={{display:"flex",gap:8,marginBottom:14,justifyContent:"flex-end"}}>
+              <button onClick={()=>speak(p.en,'en')} style={btn("#4f46e5",{padding:"7px 14px",fontSize:"0.78rem"})}>🔊 EN</button>
+              <button onClick={()=>speak(p.ur,'ur')} style={btn("#7c3aed",{padding:"7px 14px",fontSize:"0.78rem"})}>🔊 UR</button>
+            </div>
+            <div style={{fontSize:"0.96rem",lineHeight:1.9,color:"#1e1b4b",background:"#f0f4ff",padding:"14px 16px",borderRadius:14,marginBottom:12,borderLeft:"4px solid #4f46e5"}}>{p.en}</div>
+            <div style={{fontFamily:"'Noto Nastaliq Urdu',serif",fontSize:"0.93rem",lineHeight:2.4,color:"#4c0098",direction:"rtl",background:"#faf5ff",padding:"12px 14px",borderRadius:14,borderRight:"4px solid #7c3aed"}}>{p.ur}</div>
+          </div>
+          
+          <div style={{display:"flex",gap:10,justifyContent:"center",alignItems:"center"}}>
+            <button onClick={()=>setPg(Math.max(0,pg-1))} disabled={pg===0}
+              style={btn(pg===0?"rgba(255,255,255,0.1)":"#4f46e5",{cursor:pg===0?"not-allowed":"pointer",opacity:pg===0?0.4:1})}>← Prev</button>
+            <div style={{display:"flex",gap:5}}>
+              {open.pages.map((_,i)=><div key={i} style={{width:9,height:9,borderRadius:"50%",background:i===pg?"#fbbf24":"rgba(255,255,255,0.25)",transition:"all 0.3s",transform:i===pg?"scale(1.2)":"scale(1)"}}/>)}
+            </div>
+            <button onClick={()=>{if(!isLast)setPg(pg+1);else{setStars(s=>s+1);setXp(x=>x+50);setOpen(null);setPg(0);}}}
+              style={btn(isLast?"linear-gradient(135deg,#f59e0b,#ef4444)":"linear-gradient(135deg,#4f46e5,#7c3aed)")}>
+              {isLast?"⭐ +1 Finish!":"Next →"}
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
+    return(
+      <div style={{direction:isRTL?"rtl":"ltr",animation:"slideIn 0.4s ease"}}>
+        <BackBtn/>
+        <h2 style={{fontFamily:"'Fredoka One',cursive",color:"white",marginBottom:12,fontSize:"1.6rem",letterSpacing:"0.5px"}}>📖 {isRTL?"کہانیوں کی لائبریری":"Story Library"}</h2>
+        <div style={{display:"flex",gap:7,marginBottom:14,flexWrap:"wrap"}}>
+          {[["all","All / سب"],["bablo","🐼 Bablo"],["comic","💥 Comic"],["story","📖 Story"],["success","🏆 Success"]].map(([k,l])=>(
+            <button key={k} onClick={()=>setFilter(k)} style={{
+              background:filter===k?"rgba(124,58,237,0.8)":"rgba(255,255,255,0.07)",
+              color:"white",border:"1px solid rgba(255,255,255,0.18)",
+              borderRadius:20,padding:"5px 13px",fontSize:"0.73rem",cursor:"pointer",fontFamily:"inherit",fontWeight:700,
+              boxShadow:filter===k?"0 4px 15px rgba(124,58,237,0.4)":"none",transition:"all 0.2s"
+            }}>{l}</button>
+          ))}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          {filtered.map(b=>(
+            <div key={b.id} onClick={()=>{setOpen(b);setPg(0);}} className="card-lift"
+              style={{
+                background:typeColors[b.type]||typeColors.story,
+                borderRadius:18,padding:"16px 14px",
+                textAlign:"center",
+                boxShadow:"0 6px 20px rgba(0,0,0,0.3)",
+                border:"1px solid rgba(255,255,255,0.1)"
+              }}>
+              <div style={{fontSize:"2.3rem",marginBottom:7,filter:"drop-shadow(0 3px 8px rgba(0,0,0,0.5))"}}>{b.emoji}</div>
+              <div style={{fontWeight:800,fontSize:"0.85rem",color:"white",marginBottom:5,lineHeight:1.3}}>{isRTL?b.titleUr:b.titleEn}</div>
+              <div style={{display:"flex",justifyContent:"center",gap:5,flexWrap:"wrap"}}>
+                <span style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.5)",background:"rgba(0,0,0,0.25)",borderRadius:10,padding:"1px 7px"}}>{b.pages.length}p</span>
+                <span style={{fontSize:"0.62rem",color:"#fbbf24"}}>⭐+1</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ===== AI CHAT =====
+  const AIChat=()=>{
+    const INIT={r:"ai",t:"السلام علیکم! 🐼\n\nمیں بابلو ہوں — آپ کا AI پانڈا استاد!\n\n• اردو میں لکھیں → اردو میں جواب\n• English میں لکھیں → English + اردو\n• 🔊 Listen دبائیں — جواب سنیں\n• 🎙️ مائیک سے بول کر بھی بھیجیں!\n\nAsk me anything! 🎓"};
+    const [sessions,setSessions]=useState([{id:1,name:"Chat 1",msgs:[INIT]}]);
+    const [activeId,setActiveId]=useState(1);
+    const [input,setInput]=useState("");
+    const [loading,setLoading]=useState(false);
+    const [showHist,setShowHist]=useState(false);
+    const [isRec,setIsRec]=useState(false);
+    const endRef=useRef(null);
+    const recRef=useRef(null);
+    const active=sessions.find(s=>s.id===activeId)||sessions[0];
+    const msgs=active.msgs;
+    const updateMsgs=(fn)=>setSessions(p=>p.map(s=>s.id===activeId?{...s,msgs:typeof fn==="function"?fn(s.msgs):fn}:s));
+    useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs,loading]);
+    const speakMsg=(text)=>{
+      if(!window.speechSynthesis)return;
+      window.speechSynthesis.cancel();
+      const isUrdu=/[؀-ۿ]/.test(text);
+      const clean=isUrdu?text:text.split("🕌")[0].trim();
+      const u=new SpeechSynthesisUtterance(clean||text);
+      u.lang=isUrdu?"ur-PK":"en-US";u.rate=0.86;u.pitch=1.05;u.volume=1;
+      const vs=window.speechSynthesis.getVoices();
+      const v=vs.find(x=>x.lang===u.lang)||vs.find(x=>x.lang.startsWith(u.lang.split("-")[0]));
+      if(v)u.voice=v;
+      window.speechSynthesis.speak(u);
+    };
+    const send=async(override)=>{
+      const text=(override||input).trim();
+      if(!text||loading)return;
+      setInput("");
+      const nm=[...msgs,{r:"user",t:text}];
+      updateMsgs(nm);
+      setLoading(true);
+      try{
+        const reply=await callAI(nm.slice(-10).map(m=>({role:m.r==="ai"?"assistant":"user",content:m.t})));
+        updateMsgs(m=>[...m,{r:"ai",t:reply}]);
+        setXp(x=>x+10);
+      }catch(e){updateMsgs(m=>[...m,{r:"ai",t:"Oops 🐼\n\n🕌 اردو: دوبارہ کوشش کریں!"}]);}
+      setLoading(false);
+    };
+    const startRec=()=>{
+      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+      if(!SR){alert("Voice works in Chrome only!");return;}
+      window.speechSynthesis.cancel();
+      const r=new SR();
+      r.lang=lang==="ur"?"ur-PK":"en-US";r.continuous=false;r.interimResults=false;
+      r.onstart=()=>setIsRec(true);
+      r.onresult=(e)=>{const t=e.results[0][0].transcript;setIsRec(false);send(t);};
+      r.onend=()=>setIsRec(false);r.onerror=()=>setIsRec(false);
+      recRef.current=r;r.start();
+    };
+    const stopRec=()=>{recRef.current?.stop();setIsRec(false);};
+    const newChat=()=>{const id=Date.now();setSessions(p=>[...p,{id,name:"Chat "+(p.length+1),msgs:[INIT]}]);setActiveId(id);setShowHist(false);};
+    const quickQ=["Help with grammar 📝","New word ✨","Study tips 🧠","Correct my English ✅","What is perseverance? 💪","How to focus? 🎯"];
+    return(
+      <div style={{direction:isRTL?"rtl":"ltr",animation:"slideIn 0.4s ease"}}>
+        <div style={{display:"flex",gap:8,marginBottom:12,alignItems:"center"}}>
+          <BackBtn/>
+          <div style={{flex:1}}/>
+          <button onClick={()=>setShowHist(h=>!h)} style={btn(showHist?"rgba(124,58,237,0.5)":"rgba(255,255,255,0.08)",{border:"1px solid rgba(255,255,255,0.2)",padding:"8px 12px",fontSize:"0.76rem"})}>📜 {isRTL?"تاریخ":"History"}</button>
+          <button onClick={newChat} style={btn("linear-gradient(135deg,#4f46e5,#7c3aed)",{padding:"8px 12px",fontSize:"0.76rem"})}>✚ {isRTL?"نئی":"New"}</button>
+        </div>
+        {showHist&&(
+          <div style={{background:"rgba(0,0,0,0.45)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"12px",marginBottom:12,animation:"slideIn 0.3s ease"}}>
+            <div style={{color:"white",fontWeight:800,fontSize:"0.85rem",marginBottom:8}}>💬 {isRTL?"گفتگو کی تاریخ":"Chat History"}</div>
+            {sessions.map(s=>(
+              <div key={s.id} onClick={()=>{setActiveId(s.id);setShowHist(false);}} style={{padding:"9px 12px",borderRadius:10,marginBottom:4,cursor:"pointer",transition:"all 0.2s",background:s.id===activeId?"rgba(124,58,237,0.3)":"rgba(255,255,255,0.04)",border:`1px solid ${s.id===activeId?"rgba(124,58,237,0.5)":"rgba(255,255,255,0.07)"}`}}>
+                <div style={{color:"white",fontSize:"0.83rem",fontWeight:700}}>{s.name}</div>
+                <div style={{color:"rgba(255,255,255,0.38)",fontSize:"0.66rem"}}>{s.msgs.length-1} messages</div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{background:"linear-gradient(135deg,#064e3b,#065f46)",borderRadius:20,padding:"13px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:12,border:"1px solid rgba(16,185,129,0.3)",boxShadow:"0 8px 25px rgba(16,185,129,0.2)"}}>
+          <PandaMascot size={44}/>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"'Fredoka One',cursive",color:"white",fontSize:"1.05rem"}}>🤖 Bablo AI</div>
+            <div style={{color:"rgba(52,211,153,0.9)",fontSize:"0.7rem",fontWeight:700,display:"flex",alignItems:"center",gap:5}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:"#34d399",animation:"dotPulse 1.5s ease-in-out infinite"}}/>
+              {active.name} • Claude AI
+            </div>
+          </div>
+        </div>
+        <div style={{background:"rgba(0,0,0,0.35)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:20,padding:"14px",minHeight:260,maxHeight:340,overflowY:"auto",marginBottom:12}}>
+          {msgs.map((m,i)=>(
+            <div key={i} style={{display:"flex",flexDirection:m.r==="ai"?"row":"row-reverse",marginBottom:14,gap:8,alignItems:"flex-end",animation:"slideIn 0.3s ease"}}>
+              {m.r==="ai"&&<div style={{fontSize:"1.55rem",flexShrink:0}}>🐼</div>}
+              <div style={{background:m.r==="ai"?"rgba(255,255,255,0.96)":"linear-gradient(135deg,#4f46e5,#7c3aed)",color:m.r==="ai"?"#1e1b4b":"white",padding:"11px 14px",borderRadius:m.r==="ai"?"4px 18px 18px 18px":"18px 4px 18px 18px",maxWidth:"84%",fontSize:"0.86rem",lineHeight:1.8,boxShadow:"0 4px 18px rgba(0,0,0,0.3)",whiteSpace:"pre-wrap"}}>
+                {m.t}
+                {m.r==="ai"&&(<button onClick={()=>speakMsg(m.t)} style={{display:"flex",alignItems:"center",gap:4,background:"rgba(124,58,237,0.1)",border:"1px solid rgba(124,58,237,0.25)",borderRadius:20,padding:"3px 10px",marginTop:7,cursor:"pointer",fontSize:"0.72rem",color:"#7c3aed",fontFamily:"inherit",fontWeight:700}}>🔊 Listen / سنیں</button>)}
+              </div>
+            </div>
+          ))}
+          {loading&&(
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <div style={{fontSize:"1.55rem"}}>🐼</div>
+              <div style={{background:"rgba(255,255,255,0.93)",padding:"10px 18px",borderRadius:"4px 18px 18px 18px",display:"flex",gap:5}}>
+                {[0,0.2,0.4].map((d,i)=><div key={i} style={{width:8,height:8,borderRadius:"50%",background:"#7c3aed",animation:`dotPulse 1s ease ${d}s infinite`}}/>)}
+              </div>
+            </div>
+          )}
+          <div ref={endRef}/>
+        </div>
+        <div style={{display:"flex",gap:8,marginBottom:10,alignItems:"center"}}>
+          <div style={{position:"relative",flexShrink:0}}>
+            {isRec&&<div style={{position:"absolute",inset:-5,borderRadius:"50%",border:"3px solid rgba(239,68,68,0.5)",animation:"dotPulse 1s ease-out infinite"}}/>}
+            <button onMouseDown={startRec} onMouseUp={stopRec} onTouchStart={startRec} onTouchEnd={stopRec} style={{width:46,height:46,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:"1.2rem",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s",background:isRec?"linear-gradient(135deg,#ef4444,#dc2626)":"linear-gradient(135deg,#7c3aed,#4f46e5)",boxShadow:isRec?"0 0 0 5px rgba(239,68,68,0.2)":"0 4px 14px rgba(124,58,237,0.4)"}}>
+              {isRec?"⏹":"🎙️"}
+            </button>
+          </div>
+          <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!loading&&send()} placeholder={isRTL?"یہاں لکھیں یا مائیک دبائیں...":"Type here or press mic..."} style={{flex:1,padding:"13px 18px",borderRadius:50,border:"2px solid rgba(124,58,237,0.4)",fontSize:"0.87rem",fontFamily:"'Nunito',sans-serif",background:"rgba(255,255,255,0.08)",color:"white"}}/>
+          <button onClick={()=>send()} disabled={loading||!input.trim()} style={btn("linear-gradient(135deg,#7c3aed,#4f46e5)",{padding:"13px 18px",flexShrink:0,opacity:loading||!input.trim()?0.45:1,boxShadow:"0 4px 15px rgba(124,58,237,0.4)"})}>
+            {loading?"⏳":"✈️"}
+          </button>
+        </div>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}>
+          {quickQ.map(q=>(<button key={q} onClick={()=>send(q)} style={{background:"rgba(124,58,237,0.14)",border:"1px solid rgba(124,58,237,0.3)",borderRadius:20,padding:"5px 11px",color:"rgba(255,255,255,0.78)",fontSize:"0.68rem",cursor:"pointer",fontFamily:"inherit",fontWeight:700}}>{q}</button>))}
+        </div>
+        <div style={{textAlign:"center",color:"rgba(255,255,255,0.25)",fontSize:"0.62rem"}}>🎙️ {isRTL?"مائیک دبائیں اور بولیں":"Press mic and speak — sends automatically"}</div>
+      </div>
+    );
+  };
+
+    // ===== CONVERSATIONS =====
+  const Conversations=()=>{
+    const [sel,setSel]=useState(null);
+    const [step,setStep]=useState(0);
+    if(sel){
+      const conv=CONVERSATIONS.find(c=>c.id===sel);
+      const ex=conv.exchanges[step];
+      const isAI=ex.r==="ai";
+      const isLast=step===conv.exchanges.length-1;
+      return(
+        <div style={{direction:isRTL?"rtl":"ltr",animation:"slideIn 0.4s ease"}}>
+          <button onClick={()=>{setSel(null);setStep(0);}} style={{...btn("rgba(255,255,255,0.1)"),border:"1px solid rgba(255,255,255,0.2)",marginBottom:14,fontSize:"0.85rem"}}>← Back</button>
+          <div style={{
+            background:`linear-gradient(135deg,${conv.color},${conv.color}88)`,
+            borderRadius:20,padding:"16px",marginBottom:14,textAlign:"center",
+            border:"1px solid rgba(255,255,255,0.15)"
+          }}>
+            <div style={{fontSize:"1.9rem",marginBottom:4}}>{conv.icon}</div>
+            <div style={{fontFamily:"'Fredoka One',cursive",color:"white",fontWeight:900}}>{isRTL?conv.topicUr:conv.topicEn}</div>
+            <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:8}}>
+              {conv.exchanges.map((_,i)=><div key={i} style={{width:8,height:8,borderRadius:"50%",background:i<=step?"#fbbf24":"rgba(255,255,255,0.2)",transition:"all 0.3s"}}/>)}
+            </div>
+          </div>
+          
+          <div style={{background:"white",borderRadius:20,padding:"18px",marginBottom:12,boxShadow:"0 8px 30px rgba(0,0,0,0.25)",border:`3px solid ${isAI?"#7c3aed":"#10b981"}`}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+              <span style={{fontSize:"1.5rem"}}>{isAI?"🐼":"👤"}</span>
+              <span style={{fontWeight:800,color:isAI?"#7c3aed":"#059669",fontSize:"0.85rem"}}>{isAI?"Bablo AI":"You"}</span>
+            </div>
+            <div style={{fontSize:"0.95rem",lineHeight:1.9,color:"#1e1b4b",background:"#f0f4ff",padding:"12px 14px",borderRadius:12,marginBottom:10}}>
+              {ex.en}<button onClick={()=>speak(ex.en,'en')} style={{background:"none",border:"none",cursor:"pointer",fontSize:"0.9rem",marginLeft:5}}>🔊</button>
+            </div>
+            <div style={{fontFamily:"'Noto Nastaliq Urdu',serif",fontSize:"0.92rem",lineHeight:2.4,color:"#4c0098",direction:"rtl",background:"#faf5ff",padding:"10px 12px",borderRadius:12}}>
+              {ex.ur}<button onClick={()=>speak(ex.ur,'ur')} style={{background:"none",border:"none",cursor:"pointer",fontSize:"0.9rem",marginLeft:5}}>🔊</button>
+            </div>
+          </div>
+          
+          <button onClick={()=>{if(!isLast)setStep(step+1);else{setStars(s=>s+1);setXp(x=>x+60);setSel(null);setStep(0);}}}
+            style={{...btn(isLast?"linear-gradient(135deg,#f59e0b,#ef4444)":"linear-gradient(135deg,#7c3aed,#4f46e5)"),width:"100%",padding:"14px"}}>
+            {isLast?"⭐ Finish Conversation!":"Next Exchange →"}
+          </button>
+        </div>
+      );
+    }
+    return(
+      <div style={{direction:isRTL?"rtl":"ltr",animation:"slideIn 0.4s ease"}}>
+        <BackBtn/>
+        <h2 style={{fontFamily:"'Fredoka One',cursive",color:"white",marginBottom:16,fontSize:"1.6rem"}}>💬 {isRTL?"گفتگو کی مشق":"Conversations"}</h2>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {CONVERSATIONS.map(c=>(
+            <div key={c.id} onClick={()=>setSel(c.id)} className="card-lift"
+              style={{
+                background:`linear-gradient(135deg,${c.color}dd,${c.color}88)`,
+                borderRadius:18,padding:"16px 18px",
+                display:"flex",alignItems:"center",gap:14,
+                boxShadow:"0 6px 20px rgba(0,0,0,0.3)",
+                border:"1px solid rgba(255,255,255,0.1)"
+              }}>
+              <div style={{fontSize:"2.2rem",filter:"drop-shadow(0 3px 8px rgba(0,0,0,0.4))"}}>{c.icon}</div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:800,fontSize:"0.95rem",color:"white"}}>{isRTL?c.topicUr:c.topicEn}</div>
+                <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.5)",marginTop:2}}>{c.exchanges.length} exchanges • +1⭐</div>
+              </div>
+              <div style={{color:"rgba(255,255,255,0.5)",fontSize:"1.2rem"}}>→</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ===== VOCABULARY =====
+  const VocabPage=()=>{
+    const [flip,setFlip]=useState({});
+    return(
+      <div style={{direction:isRTL?"rtl":"ltr",animation:"slideIn 0.4s ease"}}>
+        <BackBtn/>
+        <h2 style={{fontFamily:"'Fredoka One',cursive",color:"white",marginBottom:4,fontSize:"1.6rem"}}>✨ {isRTL?"الفاظ کا خزانہ":"Word Treasury"}</h2>
+        <p style={{color:"rgba(255,255,255,0.4)",fontSize:"0.75rem",marginBottom:14}}>{isRTL?"مثال دیکھنے کے لیے کارڈ پر ٹیپ کریں!":"Tap a card to see example sentence!"}</p>
+        <div style={{display:"flex",flexDirection:"column",gap:9}}>
+          {VOCAB.map((v,i)=>(
+            <div key={i} onClick={()=>setFlip(f=>({...f,[i]:!f[i]}))}
+              style={{
+                background:flip[i]?"rgba(124,58,237,0.15)":"rgba(255,255,255,0.07)",
+                borderRadius:18,padding:"14px 16px",
+                cursor:"pointer",transition:"all 0.3s",
+                border:`2px solid ${flip[i]?"rgba(124,58,237,0.6)":"rgba(255,255,255,0.1)"}`,
+                boxShadow:flip[i]?"0 6px 20px rgba(124,58,237,0.25)":"none"
+              }}>
+              <div style={{display:"flex",alignItems:"center",gap:12}}>
+                <div style={{
+                  minWidth:42,width:42,height:42,
+                  background:"linear-gradient(135deg,#4f46e5,#7c3aed)",
+                  borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:"1.3rem",boxShadow:"0 4px 12px rgba(124,58,237,0.4)"
+                }}>{v.icon}</div>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontWeight:900,fontSize:"1.05rem",color:"#a5b4fc"}}>{v.en}</span>
+                    <button onClick={e=>{e.stopPropagation();speak(v.en,'en');}} style={{background:"none",border:"none",cursor:"pointer",fontSize:"0.85rem"}}>🔊</button>
+                  </div>
+                  <div style={{fontFamily:"'Noto Nastaliq Urdu',serif",fontSize:"0.9rem",color:"#c4b5fd",direction:"rtl",marginTop:1}}>
+                    {v.ur}
+                    <button onClick={e=>{e.stopPropagation();speak(v.ur,'ur');}} style={{background:"none",border:"none",cursor:"pointer",fontSize:"0.85rem",marginLeft:4}}>🔊</button>
+                  </div>
+                  <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.45)",fontStyle:"italic",marginTop:2}}>{v.meaning}</div>
+                  {flip[i]&&(
+                    <div style={{fontSize:"0.8rem",color:"#34d399",marginTop:7,background:"rgba(16,185,129,0.1)",padding:"6px 10px",borderRadius:10,fontStyle:"italic",border:"1px solid rgba(52,211,153,0.2)"}}>
+                      💬 "{v.ex}"
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderPage=()=>{
+    switch(page){
+      case "library":return<Library/>;
+      case "aichat":return<AIChat/>;
+      case "conversations":return<Conversations/>;
+      case "vocabulary":return<VocabPage/>;
+      default:return<Home/>;
+    }
+  };
+
+  return(
+    <div style={{background:"#0f0c29",minHeight:"100vh",position:"relative"}}>
+      <AuroraBg/>
+      <div style={{position:"relative",zIndex:1,maxWidth:440,margin:"0 auto",minHeight:"100vh",display:"flex",flexDirection:"column",padding:"10px"}}>
+        {/* HEADER */}
+        <div style={{
+          background:"rgba(255,255,255,0.05)",backdropFilter:"blur(20px)",
+          border:"1px solid rgba(255,255,255,0.1)",borderRadius:20,
+          padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",
+          marginBottom:12,boxShadow:"0 4px 24px rgba(0,0,0,0.4)"
+        }}>
+          <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}} onClick={()=>setPage("home")}>
+            <PandaMascot size={34}/>
+            <div>
+              <div style={{fontFamily:"'Fredoka One',cursive",color:"white",fontSize:"1.05rem",lineHeight:1}}>Bablo</div>
+              <div style={{fontSize:"0.57rem",color:"rgba(167,139,250,0.6)",fontWeight:700}}>AI Learning</div>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{background:"rgba(251,191,36,0.15)",border:"1px solid rgba(251,191,36,0.3)",borderRadius:20,padding:"5px 12px",fontSize:"0.82rem",fontWeight:900,color:"#fbbf24"}}>⭐ {stars}</div>
+            <div style={{background:"rgba(124,58,237,0.2)",border:"1px solid rgba(124,58,237,0.4)",borderRadius:20,padding:"5px 12px",fontSize:"0.78rem",fontWeight:800,color:"#a78bfa"}}>{xp}xp</div>
+          </div>
+        </div>
+
+        {/* MAIN */}
+        <div style={{flex:1,overflowY:"auto",paddingBottom:14}}>
+          {renderPage()}
+        </div>
+
+        {/* FOOTER */}
+        <div style={{textAlign:"center",padding:"8px",fontSize:"0.62rem",color:"rgba(255,255,255,0.2)",fontWeight:700}}>
+          Designed by <span style={{color:"rgba(167,139,250,0.6)"}}>Muhammad Usman</span> · Bablo 🐼 © 2025
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root=ReactDOM.createRoot(document.getElementById('root'));
+root.render(<BabloApp/>);
+</script>
+</body>
+</html>
