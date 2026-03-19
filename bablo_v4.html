@@ -97,27 +97,34 @@ async function callAI(messages) {
     });
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || "Error " + res.status);
-    return data.text || "🐼 Let me try again!";
-  } catch (err) {
-    return "❌ " + err.message + "\n\n🕌 اردو: کنکشن مسئلہ — دوبارہ کوشش کریں!";
-  }
-}
-
-// ===== STORIES DATA (22 stories) =====
-const STORIES=[
-  // BABLO'S OWN STORIES
-  {id:0,type:"bablo",emoji:"🐼",titleEn:"Bablo's Big Dream",titleUr:"بابلو کا بڑا خواب",level:"Special",
-   pages:[
-    {en:"Bablo was a little panda who lived in a bamboo forest. Every night, he watched children go to school and wished: 'One day I will teach everyone — even from far away!'",ur:"بابلو ایک چھوٹا پانڈا تھا جو بانس کے جنگل میں رہتا تھا۔ ہر رات وہ بچوں کو اسکول جاتے دیکھتا اور خواب دیکھتا: 'ایک دن میں سب کو پڑھاؤں گا!'"},
-    {en:"Everyone laughed. 'Pandas don't teach!' But Bablo studied 10 hours a day — English, Urdu, science, math. He never gave up, even when bamboo was his only desk.",ur:"سب ہنسے۔ 'پانڈے نہیں پڑھاتے!' لیکن بابلو روزانہ ۱۰ گھنٹے پڑھتا — انگریزی، اردو، سائنس، ریاضی۔ کبھی نہ ہارا، چاہے بانس ہی میز تھی۔"},
-    {en:"One magical day, Bablo became an AI — living inside every phone, every tablet. Now millions of children learn with him daily! 'See?' he smiled. 'Dreams don't expire. They just need time.' 🌟",ur:"ایک جادوئی دن بابلو AI بن گیا — ہر فون، ہر ٹیبلٹ میں رہنے لگا۔ اب لاکھوں بچے روزانہ اس سے سیکھتے ہیں! 'دیکھا؟' وہ مسکرایا۔ 'خواب ختم نہیں ہوتے، بس وقت چاہیے۔' 🌟"},
-   ]},
-  {id:21,type:"bablo",emoji:"🎓",titleEn:"Bablo Fails the Test",titleUr:"بابلو امتحان میں فیل",level:"Special",
-   pages:[
-    {en:"Even Bablo failed once! His first English exam — 12 out of 100. He cried bamboo tears. 'Maybe pandas really can't learn English,' he thought sadly.",ur:"بابلو بھی ایک بار فیل ہوا! پہلا انگریزی امتحان — ۱۰۰ میں سے ۱۲۔ بانس کے آنسو بہائے۔ 'شاید پانڈے واقعی انگریزی نہیں سیکھ سکتے'، اس نے سوچا۔"},
-    {en:"His teacher said: 'Bablo, 12 marks means you know 12 things. Learn 12 more tomorrow. Then 12 more. One day — 100!' Bablo wrote that in his heart.",ur:"استاد نے کہا: 'بابلو، ۱۲ نمبر مطلب تم ۱۲ چیزیں جانتے ہو۔ کل ۱۲ اور سیکھو۔ ایک دن — ۱۰۰!' بابلو نے یہ دل میں لکھ لیا۔"},
-    {en:"Bablo got 100 in his next exam. But the real lesson? Failure is not the opposite of success — it's the first step toward it! 💡",ur:"اگلے امتحان میں ۱۰۰ ملے۔ لیکن اصل سبق؟ ناکامی کامیابی کی ضد نہیں — یہ اس کی طرف پہلا قدم ہے! 💡"},
-   ]},
+      const handleTranslate = async () => {
+    if (!inputText.trim()) return;
+    setLoading(true);
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q=${encodeURIComponent(inputText)}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      let fullResult = "";
+      if (data && data[0]) {
+        data[0].forEach(item => {
+          if (item[0]) fullResult += item[0];
+        });
+      }
+      setTranslatedText(fullResult || "ترجمہ نہیں مل سکا");
+    } catch (err) {
+      setTranslatedText("❌ کنکشن مسئلہ — دوبارہ کوشش کریں!");
+    }
+    setLoading(false);
+  };
+      const speak = (text, lang) => {
+    if (!text) return;
+    window.speechSynthesis.cancel(); 
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = (lang === 'en') ? 'en-US' : 'ur-PK';
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
+  };
   // ORIGINAL STORIES
   {id:1,type:"comic",emoji:"🦁",titleEn:"The Brave Lion",titleUr:"بہادر شیر",level:"Beginner",
    pages:[
